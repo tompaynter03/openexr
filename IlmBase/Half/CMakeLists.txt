@@ -1,15 +1,26 @@
 # yue.nicholas@gmail.com
 
-ADD_EXECUTABLE ( eLut eLut.cpp )
+IF(CMAKE_CROSSCOMPILING)
+  INCLUDE(${CMAKE_BINARY_DIR}/../build_native/ImportExecutables_IlmBase_Half.cmake)
+ENDIF(CMAKE_CROSSCOMPILING)
+
+# only build the generator if not crosscompiling
+IF(NOT CMAKE_CROSSCOMPILING)
+  ADD_EXECUTABLE ( eLut eLut.cpp )
+  ADD_EXECUTABLE ( toFloat toFloat.cpp )
+  #Export the generators for use when we are cross compiling
+  EXPORT(TARGETS eLut toFloat FILE ${CMAKE_BINARY_DIR}/ImportExecutables_IlmBase_Half.cmake )
+ENDIF(NOT CMAKE_CROSSCOMPILING)
+
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/eLut.h
   COMMAND $<TARGET_FILE:eLut> ARGS > ${CMAKE_CURRENT_BINARY_DIR}/eLut.h
   DEPENDS eLut)
+
 SET_SOURCE_FILES_PROPERTIES(
   ${CMAKE_CURRENT_BINARY_DIR}/eLut.h
   PROPERTIES HEADER_FILE_ONLY TRUE)
 
-ADD_EXECUTABLE ( toFloat toFloat.cpp )
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/toFloat.h
   COMMAND $<TARGET_FILE:toFloat> ARGS > ${CMAKE_CURRENT_BINARY_DIR}/toFloat.h

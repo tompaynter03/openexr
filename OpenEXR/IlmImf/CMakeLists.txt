@@ -7,11 +7,14 @@ IF (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/b44ExpLogTable.h")
   SET(BUILD_B44EXPLOGTABLE ON)
 ENDIF ()
 
-IF (BUILD_B44EXPLOGTABLE)
-  ADD_EXECUTABLE ( b44ExpLogTable
-    b44ExpLogTable.cpp
-  )
+IF(CMAKE_CROSSCOMPILING)
+  INCLUDE(${CMAKE_BINARY_DIR}/../build_native/ImportExecutables_OpenEXR_IlmImf.cmake)
+ENDIF(CMAKE_CROSSCOMPILING)
 
+  # only build the generator if not crosscompiling
+IF(NOT CMAKE_CROSSCOMPILING)
+
+  ADD_EXECUTABLE ( b44ExpLogTable b44ExpLogTable.cpp )
   IF (WIN32)
     TARGET_LINK_LIBRARIES ( b44ExpLogTable
       IlmBase::Half_static
@@ -24,42 +27,42 @@ IF (BUILD_B44EXPLOGTABLE)
       IlmBase::Iex${OPENEXR_TARGET_SUFFIX}
       ${PTHREAD_LIB})
   ENDIF()
-
   TARGET_INCLUDE_DIRECTORIES ( b44ExpLogTable
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../IlmBase/Half
   )
 
+  ADD_EXECUTABLE ( dwaLookups  dwaLookups.cpp )
+  SET_ILMBASE_INCLUDE_DIRS(dwaLookups)
+  IF (WIN32)
+    TARGET_LINK_LIBRARIES ( dwaLookups
+      IlmBase::Half_static
+      IlmBase::IlmThread_static
+      IlmBase::Iex_static)
+  ELSE()
+    TARGET_LINK_LIBRARIES ( dwaLookups
+      IlmBase::Half${OPENEXR_TARGET_SUFFIX}
+      IlmBase::IlmThread${OPENEXR_TARGET_SUFFIX}
+      IlmBase::Iex${OPENEXR_TARGET_SUFFIX}
+      ${PTHREAD_LIB})
+  ENDIF()
+
+  #Export the generators for use when we are cross compiling
+  EXPORT(TARGETS b44ExpLogTable dwaLookups FILE ${CMAKE_BINARY_DIR}/ImportExecutables_OpenEXR_IlmImf.cmake )
+
+ENDIF(NOT CMAKE_CROSSCOMPILING)
+
+IF (BUILD_B44EXPLOGTABLE)
   ADD_CUSTOM_COMMAND (
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/b44ExpLogTable.h
     COMMAND $<TARGET_FILE:b44ExpLogTable> > ${CMAKE_CURRENT_BINARY_DIR}/b44ExpLogTable.h
     DEPENDS b44ExpLogTable
   )
-
 ELSE ()
   message (STATUS "Skipping build of b44ExpLogTable.h")
 ENDIF()
-
+  
 if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/dwaLookups.h")
-  ADD_EXECUTABLE ( dwaLookups
-    dwaLookups.cpp
-  )
-
   SET(BUILD_DWALOOKUPS ON)
-
-  SET_ILMBASE_INCLUDE_DIRS(dwaLookups)
-
-  IF (WIN32)
-    TARGET_LINK_LIBRARIES ( dwaLookups
-      IlmBase::Half_static
-      IlmBase::IlmThread_static
-      IlmBase::Iex_static)
-  ELSE()
-    TARGET_LINK_LIBRARIES ( dwaLookups
-      IlmBase::Half${OPENEXR_TARGET_SUFFIX}
-      IlmBase::IlmThread${OPENEXR_TARGET_SUFFIX}
-      IlmBase::Iex${OPENEXR_TARGET_SUFFIX}
-      ${PTHREAD_LIB})
-  ENDIF()
 
   ADD_CUSTOM_COMMAND (
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dwaLookups.h

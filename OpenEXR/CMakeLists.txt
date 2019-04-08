@@ -180,7 +180,7 @@ ENDIF ()
 ##########################
 # Example Code
 ##########################
-ADD_SUBDIRECTORY ( IlmImfExamples )
+#ADD_SUBDIRECTORY ( IlmImfExamples )
 
 
 ##########################
